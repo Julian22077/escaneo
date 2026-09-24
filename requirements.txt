@@ -3,5 +3,5 @@ uvicorn
 python-multipart
 opencv-python-headless
 numpy
-easyocr
+rapidocr
 imutils

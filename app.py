@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import easyocr
+from rapidocr import RapidOCR
 import imutils
 import re
 
@@ -9,7 +9,7 @@ from fastapi import FastAPI, UploadFile, File
 
 app = FastAPI(
     title="Lector de Placas",
-    description="API para detectar placas vehiculares mediante OpenCV y EasyOCR",
+    description="API para detectar placas vehiculares mediante OpenCV y RapidOCR",
     version="1.0.0"
 )
 
@@ -18,7 +18,7 @@ app = FastAPI(
 # CARGAR OCR UNA SOLA VEZ
 # =========================================================
 
-reader = easyocr.Reader(['es'])
+ocr = RapidOCR()
 
 
 # =========================================================
@@ -61,34 +61,34 @@ def obteneplaca(location, img, gray):
     # OCR
     # =====================================================
 
-    result = reader.readtext(cropped_image)
+    result = ocr(cropped_image)
 
 
     # =====================================================
     # BUSCAR TEXTO CON FORMATO DE PLACA
     # =====================================================
 
-    for resultado in result:
+    if result and result.txts:
 
-        texto = resultado[1]
+        for texto in result.txts:
 
-        # Convertir a mayúsculas
-        texto = texto.upper()
+            # Convertir a mayúsculas
+            texto = texto.upper()
 
-        # Eliminar espacios, guiones y caracteres especiales
-        texto = re.sub(
-            r'[^A-Z0-9]',
-            '',
-            texto
-        )
+            # Eliminar espacios, guiones y caracteres especiales
+            texto = re.sub(
+                r'[^A-Z0-9]',
+                '',
+                texto
+            )
 
-        # Comprobar formato:
-        # 3 letras + 3 números
-        if re.fullmatch(
-            r'[A-Z]{3}[0-9]{3}',
-            texto
-        ):
-            return texto
+            # Comprobar formato:
+            # 3 letras + 3 números
+            if re.fullmatch(
+                r'[A-Z]{3}[0-9]{3}',
+                texto
+            ):
+                return texto
 
 
     return None
